@@ -39,7 +39,7 @@ export const Login = async (req, res) => {
             where: { email: req.body.email }
         });
         
-        if (!user) return res.status(404).json({ msg: "Email tidak ditemukan" });
+        if (!user) return res.status(404).json({ msg: "Email tidak terdaftar!" });
 
         if (!process.env.ACCESS_TOKEN_SECRET || !process.env.REFRESH_TOKEN_SECRET) {
             console.error("ERROR: JWT Secret belum dikonfigurasi di file .env!");
@@ -47,7 +47,7 @@ export const Login = async (req, res) => {
         }
 
         const match = await bcrypt.compare(req.body.password, user.password);
-        if (!match) return res.status(400).json({ msg: "Wrong Password" });
+        if (!match) return res.status(400).json({ msg: "Password salah!" });
         const userId = user.id;
         const name = user.name;
         const email = user.email;

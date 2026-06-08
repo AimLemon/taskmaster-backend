@@ -37,7 +37,11 @@ if (!fs.existsSync('./uploads')) {
 app.use(router);
 
 // 3. DATABASE & SERVER START
-if (cluster.isPrimary) {
+// Pada Free Tier (Render/Heroku), sebaiknya tidak menggunakan cluster karena RAM terbatas
+const isProduction = process.env.NODE_ENV === 'production';
+const useCluster = !isProduction; // Matikan cluster di production
+
+if (cluster.isPrimary && useCluster) {
     // Sinkronisasi database dilakukan sekali di proses utama
     try {
         await db.authenticate();
@@ -59,17 +63,22 @@ if (cluster.isPrimary) {
         cluster.fork();
     });
 } else {
-    const startServer = async () => {
-        try {
-            const PORT = process.env.PORT || 5001;
-            app.listen(PORT, () => {
-                console.log(`Worker ${process.pid} started on port ${PORT}`);
-            });
-        } catch (error) {
-            console.error('Worker failed to start:', error.message);
+    // Jika tidak pakai cluster, langsung jalankan server
+    try {
+        const PORT = process.env.PORT || 5001;
+        // Untuk proses utama di production
+        if (!useCluster) {
+            await db.authenticate();
+            await db.sync({ alter: true });
+            console.log('Database synchronized (No-Cluster mode)');
         }
-    };
-    startServer();
+        
+        app.listen(PORT, () => {
+            console.log(`Server started on port ${PORT} (PID: ${process.pid})`);
+        });
+    } catch (error) {
+        console.error('Server failed to start:', error.message);
+    }
 }
 
 export default app;
