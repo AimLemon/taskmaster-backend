@@ -94,7 +94,11 @@ export const Logout = async (req, res) => {
             id: userId
         }
     });
-    res.clearCookie('refreshToken');
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
     return res.sendStatus(200);
 }
 

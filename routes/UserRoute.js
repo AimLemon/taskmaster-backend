@@ -3,7 +3,8 @@ import {
     getUsers, 
     Register, 
     Login, 
-    Logout 
+    Logout,
+    updateUser
 } from "../controllers/UserController.js";
 import { 
     getTasks, 
@@ -23,6 +24,7 @@ router.get('/token', refreshToken);
 
 // --- 2. ROUTES DENGAN PROTEKSI (verifyToken) ---
 router.get('/users', verifyToken, getUsers);
+router.patch('/users/:id', verifyToken, updateUser);
 router.delete('/logout', Logout);
 
 // Task Routes
