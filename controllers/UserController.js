@@ -18,6 +18,7 @@ export const Register = async (req, res) => {
     
     // Validasi dasar
     if (!name || !email || !password) return res.status(400).json({ msg: "Semua field harus diisi" });
+    if (password.length < 6) return res.status(400).json({ msg: "Password minimal harus 6 karakter" });
     if (password !== confPassword) return res.status(400).json({ msg: "Password dan Confirm Password tidak cocok" });
 
     try {
