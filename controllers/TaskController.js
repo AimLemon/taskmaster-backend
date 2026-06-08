@@ -1,22 +1,4 @@
 import Tasks from "../models/TaskModel.js";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
-
-// Konfigurasi Penyimpanan Multer
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "uploads/");
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
-
-export const upload = multer({ 
-    storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 } // Batas 10MB
-});
 
 // GET ALL TASKS
 export const getTasks = async (req, res) => {
@@ -33,8 +15,7 @@ export const getTasks = async (req, res) => {
 
 // CREATE TASK
 export const createTask = async (req, res) => {
-    const { subject, title, description, deadline, priority, color } = req.body;
-    const attachment = req.file ? req.file.filename : null;
+    const { subject, title, description, deadline, priority, color, attachment } = req.body;
     
     try {
         await Tasks.create({
@@ -55,13 +36,11 @@ export const updateTask = async (req, res) => {
         });
         if (!task) return res.status(404).json({ msg: "Tugas tidak ditemukan" });
 
-        const { subject, title, description, deadline, priority, color, isCompleted } = req.body;
+        const { subject, title, description, deadline, priority, color, isCompleted, attachment } = req.body;
         const updateData = {
-            subject, title, description, deadline, priority, color, isCompleted
+            subject, title, description, deadline, priority, color, isCompleted, attachment
         };
         
-        if (req.file) updateData.attachment = req.file.filename;
-
         await Tasks.update({
             ...updateData
         }, {
@@ -80,12 +59,6 @@ export const deleteTask = async (req, res) => {
             where: { id: req.params.id, userId: req.userId }
         });
         if (!task) return res.status(404).json({ msg: "Tugas tidak ditemukan" });
-
-        // Hapus file fisik jika ada attachment
-        if (task.attachment) {
-            const filePath = path.join("uploads", task.attachment);
-            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-        }
 
         await Tasks.destroy({
             where: { id: task.id }
