@@ -15,21 +15,26 @@ export const getUsers = async (req, res) => {
 
 export const Register = async (req, res) => {
     const { name, email, password, confPassword } = req.body;
+    
+    // Validasi dasar
+    if (!name || !email || !password) return res.status(400).json({ msg: "Semua field harus diisi" });
     if (password !== confPassword) return res.status(400).json({ msg: "Password dan Confirm Password tidak cocok" });
-    const salt = await bcrypt.genSalt();
-    const hashPassword = await bcrypt.hash(password, salt);
+
     try {
+        const salt = await bcrypt.genSalt();
+        const hashPassword = await bcrypt.hash(password, salt);
         await Users.create({
             name: name,
             email: email,
             password: hashPassword
         });
-        res.json({ msg: "Register Berhasil" });
+        return res.status(201).json({ msg: "Register Berhasil" });
     } catch (error) {
+        console.error("Register Error:", error);
         if (error.name === 'SequelizeUniqueConstraintError') {
             return res.status(400).json({ msg: "Email sudah terdaftar!" });
         }
-        res.status(500).json({ msg: "Terjadi kesalahan pada server" });
+        return res.status(500).json({ msg: "Terjadi kesalahan pada server: " + error.message });
     }
 }
 

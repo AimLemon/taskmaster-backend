@@ -22,9 +22,6 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 
-// 2. ROUTES (Daftarkan sebelum inisialisasi async agar Vercel segera mengenali endpoint)
-app.use(router);
-
 // Tambahkan route dasar untuk root path
 // Ini akan memberikan respons jika ada yang mengakses URL root backend
 app.get('/', (req, res) => {
@@ -34,6 +31,9 @@ app.get('/', (req, res) => {
         environment: process.env.NODE_ENV || "development"
     });
 });
+
+// 2. ROUTES (Daftarkan sebelum inisialisasi async agar Vercel segera mengenali endpoint)
+app.use(router);
 
 // 3. DATABASE CONNECTION (Tanpa wrapper async di level atas agar lebih responsif)
 db.authenticate()
