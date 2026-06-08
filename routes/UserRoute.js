@@ -9,8 +9,7 @@ import {
     getTasks, 
     createTask, 
     updateTask, 
-    deleteTask,
-    upload
+    deleteTask
 } from "../controllers/TaskController.js";
 import { verifyToken } from "../middleware/VerifyToken.js";
 import { refreshToken } from "../controllers/RefreshToken.js";
@@ -28,8 +27,8 @@ router.delete('/logout', Logout);
 
 // Task Routes
 router.get('/tasks', verifyToken, getTasks);
-router.post('/tasks', verifyToken, upload.single('attachment'), createTask);
-router.patch('/tasks/:id', verifyToken, upload.single('attachment'), updateTask); 
+router.post('/tasks', verifyToken, createTask);
+router.patch('/tasks/:id', verifyToken, updateTask); 
 router.delete('/tasks/:id', verifyToken, deleteTask); 
 
 export default router;
