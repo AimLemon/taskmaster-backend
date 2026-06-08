@@ -2,6 +2,17 @@ import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
 dotenv.config();
 
+// Validasi Environment Variables untuk Database
+const requiredDbEnv = ['DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT'];
+for (const envVar of requiredDbEnv) {
+  if (!process.env[envVar]) {
+    console.error(`FATAL ERROR: Database environment variable ${envVar} is not defined.`);
+    // Di lingkungan serverless, kita tidak bisa menggunakan process.exit()
+    // Sebagai gantinya, kita throw error agar Vercel menangkapnya di log
+    throw new Error(`Missing critical database environment variable: ${envVar}`);
+  }
+}
+
 const db = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
