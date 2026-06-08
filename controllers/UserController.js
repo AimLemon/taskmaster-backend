@@ -1,5 +1,5 @@
 import Users from "../models/UserModel.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 export const getUsers = async (req, res) => {

@@ -11,7 +11,6 @@ dotenv.config();
 // Validasi awal Environment Variables
 if (!process.env.ACCESS_TOKEN_SECRET || !process.env.REFRESH_TOKEN_SECRET) {
     console.error("FATAL ERROR: JWT Secrets are not defined in .env file.");
-    process.exit(1);
 }
 
 const app = express();
@@ -24,28 +23,23 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 
-const startServer = async () => {
-    try {
-        const PORT = process.env.PORT || 5001;
-        await db.authenticate();
-        await db.sync({ alter: true });
-        console.log('Database connected & synchronized');
+// 2. ROUTES (Daftarkan sebelum inisialisasi async agar Vercel segera mengenali endpoint)
+app.use(router);
 
-        // Hanya jalankan app.listen jika TIDAK di lingkungan Vercel
+// 3. DATABASE CONNECTION (Tanpa wrapper async di level atas agar lebih responsif)
+db.authenticate()
+    .then(() => {
+        console.log('Database connected...');
+        // Hanya lakukan sync & listen jika TIDAK di lingkungan Vercel
         if (!(process.env.VERCEL === '1' || !!process.env.NOW_REGION)) {
-            app.listen(PORT, () => {
-                console.log(`Server running on port ${PORT}`);
+            db.sync({ alter: true }).then(() => {
+                const PORT = process.env.PORT || 5001;
+                app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
             });
         }
-    } catch (error) {
-        console.error('Database connection error:', error.message);
-    }
-};
-
-// Jalankan inisialisasi DB
-startServer();
-
-// 2. ROUTES
-app.use(router);
+    })
+    .catch(err => {
+        console.error('Database connection error:', err.message);
+    });
 
 export default app;
